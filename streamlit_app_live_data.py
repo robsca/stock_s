@@ -45,7 +45,7 @@ class Application:
         period = c2.selectbox('Period', ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'ytd', 'max'])
         interval_def = dictionary_period_interval[period]
         interval = c3.selectbox('Interval', ['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo'], index = list(dictionary_period_interval.values()).index(interval_def))
-        time_to_sleep = st.sidebar.slider('Refresh time (seconds)', 1, 60, 5)
+        time_to_sleep = 60
         
         # sort the transactions to have only the ticker selected
         self.transactions = self.db_transactions.select()
