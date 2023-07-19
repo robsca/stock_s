@@ -101,6 +101,7 @@ class Application:
                     
         list_count_empty = st.empty()
         clear_button_all = st.sidebar.button('Clear All Positions')
+        hist = await get_stock_price(ticker, period, interval, time_to_sleep = 'dead')
         while True: 
             if clear_button_all:
                 current_price = await get_current_price(ticker, period=period, interval=interval)
@@ -111,7 +112,6 @@ class Application:
                 # refresh the page
                 st.experimental_rerun()
             self.transactions = Database_Transactions().select()
-            hist = await get_stock_price(ticker, period, interval, time_to_sleep = time_to_sleep)
             evaluation = evaluate_support_resistance(hist, verbose = False, sensibility = 3)
             resistance, support, list_counts, current_price = evaluation
 
@@ -180,6 +180,7 @@ class Application:
             else:
                 suggestion_box.warning(f'Wait')
             # get the index of the current price inside the list counts
+            hist = await get_stock_price(ticker, period, interval, time_to_sleep = time_to_sleep)
 
 if __name__ == "__main__":
     asyncio.run(Application().main())
