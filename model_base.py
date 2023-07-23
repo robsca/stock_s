@@ -66,7 +66,7 @@ if action == 'sell':
 if action == 'hold':
 
 '''
-
+import random 
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -93,6 +93,16 @@ class Linear_QNet(nn.Module):
 
         file_name = os.path.join(model_folder_path, file_name)
         torch.save(self.state_dict(), file_name)
+
+    def load(self, file_name='model.pth'):
+        model_folder_path = './model'
+        file_name = os.path.join(model_folder_path, file_name)
+        self.load_state_dict(torch.load(file_name))
+
+    def predict(self, state):
+        state = torch.tensor(state, dtype=torch.float)
+        return torch.argmax(self.forward(state)).item()
+
 
 
 class QTrainer:
@@ -143,150 +153,101 @@ if __name__ == '__main__':
     number_of_inputs = 11
     number_of_hidden_neurons = 256
     number_of_outputs = 3
-
-    model = Linear_QNet(number_of_inputs, number_of_hidden_neurons, number_of_outputs)
+    # try to load the model
+    try:
+        model = Linear_QNet(number_of_inputs, number_of_hidden_neurons, number_of_outputs)
+        model.load()
+    except:
+        model = Linear_QNet(number_of_inputs, number_of_hidden_neurons, number_of_outputs)
     trainer = QTrainer(model, 0.001, 0.9)
     
     def get_state():
         '''
-        The state will contain a list of supports and resistances and the current price.
+        This will be a series of 11 digits, they represent 10 supports and resistances and the current price
+        The support and resistances are 0s, the current price is 1
         '''
-        state = [1,2,3,4,5,6,7,8,9,10,11]
+        # initial state is 11 zeros
+        state = [0 for i in range(11)]
+        # set the current price to 1
+        index_current_price = random.randint(0, len(state) - 1)
+        state[index_current_price] = 1
         return state
     
-    def get_reward():
+    def get_reward(state, action, next_state):
         '''
-        if position is closed return the reward otherwise return 0
+        Options: tied to the current price and the next price
+        let's suppose we have this:
+        state =  [0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+        action = 0 (buy)
+        next_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+        reward = 1
         '''
-        return 1
+        if action == 0:
+            if state[-1] == 1 and next_state[-1] == 1:
+                return 1
+            return -1
+        if action == 1:
+            if state[-1] == 1 and next_state[-1] == 1:
+                return 1
+            return -1
+        if action == 2:
+            if state[-1] == 1 and next_state[-1] == 1:
+                return 1
+            return -1
+        return 0
+        
+    def get_action(with_string=False):
+        '''
+        At the moment is a simple random choice between the 3 options.
+        
+        Goal
+        ---
+        Create a order buy, or sell
+        '''
+        classes = ['buy', 'sell', 'hold']
+        indexes = [0,1,2]
+        action = random.choice(indexes)
+        if with_string:
+            return action, classes[action]
+        return action
     
-    def get_action():
-        '''
-        the action is a buy or sell or hold
-        '''
-        return [1,0,0]
+    def get_action_from_state(state, with_string=False):
+        # here we are using the model to get the action
+        # tranform in tensor
+        state = torch.tensor(state, dtype=torch.float)
+        if with_string:
+            return torch.argmax(model(state)).item(), get_action(with_string=True)
+        return torch.argmax(model(state)).item()
     
     def get_next_state():
-        '''
-        the next state is the state after the action
-        '''
-        # get the next state from the data
-        next_state = [1,2,3,4,5,6,7,8,9,10,11]
-        return next_state
+        state = get_state()
+        return state
     
     def get_done():
         done = [0]
         return done
     
+    score = 0
     def training_loop(epochs):
+        global score
         for i in range(epochs):
             state = get_state()
-            action = get_action()
-            reward = get_reward()
+            action, action_string = get_action_from_state(state, with_string=True)
             next_state = get_next_state()
+            reward = get_reward(state, action, next_state)
+            score = score + reward
             done = get_done()
             trainer.train_step(state, action, reward, next_state, done)
+            print('Action: ', action_string)
+            print('Reward: ', reward)
+            print('Next State: ', next_state)
+            print('Done: ', done)
+            print('Score: ', score)
             print(i)
             # save the model at the end of the training
             if i == epochs - 1:
                 model.save()
 
-    #training_loop(1000)
+        print('Model Score: ', score)
 
-
-    '''
-    The idea is that we can simulate a stock trading environment and train the model on that environment.
-
-    We need metaphors for the following:
-    - state
-    - action
-    - reward
-    - next_state
-    - done
-
-    The state will contain a list of supports and resistances and the current price.
-    - the state will be a list of 11 prices
-
-    The action is a buy or sell or hold
-    - it will create a buy or sell order setting the stop loss and take profit to one of the supports or resistances depending on the action
-    - it will close the position if the stop loss or take profit is hit
-
-    The reward is the profit or loss of the position
-    - if position is closed return the reward otherwise return 0
-    - the reward will be the profit or loss of the position
-
-
-    The next state is the state after the action
-    - the next resistance or support plus the new price
-
-    The done is a boolean that is true if the position is closed otherwise is false
-    - if the position is closed return true otherwise return false
-
-    The trainer will train the model on the state, action, reward, next_state, done
-    - the trainer will train the model on the state, action, reward, next_state, done
-
-    '''
-    # show the choce of the model
-    # I want to give batch of stock prices and get the action to do
-
-    ticker = 'eurusd=x'
-    period = '1d'
-    interval = '1m'
-
-    eur_usd = yf.Ticker(ticker)
-    hist = eur_usd.history(period=period, interval=interval)
-    hist = hist.dropna()
-
-
-    from utils import evaluate_support_resistance
-
-    resistance, support, list_counts, current_price = evaluate_support_resistance(hist, verbose=False, sensibility=5)
-    # we can interpret them as 0, and 1
-    # the 0s are the supports and the the 1 is the current price (or the resistance)
-    # - encode (1,0,-1) -> supports, current price, resistance
-
-
-
-    '''
-    def check_if_close(position):
-        if position['status'] == 'open':
-            if position['take_profit'] <= position['current_price'] or position['stop_loss'] >= position['current_price']:
-                position['status'] = 'closed'
-                position['profit'] = position['current_price'] - position['open_price'] if position['type_of_position'] == 'buy' else position['open_price'] - position['current_price']
-        return position
-
-    def get_reward(position):
-        if position['status'] == 'closed':
-            return position['profit']
-        else:
-            return 0
-
-    def open_position_buy():
-        price = get_price()
-        position = {
-            'status': 'open',
-            'type_of_position': 'buy',
-            'open_price': price,
-            'take_profit': price + 0.01,
-            'stop_loss': price - 0.01,
-            'current_price': price,
-            'profit': 0
-        }
-        return position
-
-    def open_position_sell():
-        price = get_price()
-        position = {
-            'status': 'open',
-            'type_of_position': 'sell',
-            'open_price': price,
-            'take_profit': price - 0.01,
-            'stop_loss': price + 0.01,
-            'current_price': price,
-            'profit': 0
-        }
-        return position
-
-
-                '''
-    print(list_counts)
+    training_loop(1000)
