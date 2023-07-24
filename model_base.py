@@ -84,6 +84,8 @@ class Linear_QNet(nn.Module):
     def forward(self, x):
         x = F.relu(self.linear1(x))
         x = self.linear2(x)
+        x = x 
+
         return x
 
     def save(self, file_name='model.pth'):
@@ -100,8 +102,7 @@ class Linear_QNet(nn.Module):
         self.load_state_dict(torch.load(file_name))
 
     def predict(self, state):
-        state = torch.tensor(state, dtype=torch.float)
-        return torch.argmax(self.forward(state)).item()
+        return self.forward(state)
 
 
 

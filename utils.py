@@ -125,7 +125,6 @@ dictionary_period_interval = {
     'max': '1mo'
 }
 
-
 def evaluate_support_resistance(hist, verbose = True, sensibility = 5):
     '''
     This function evaluates the support and resistance of a stock
@@ -250,6 +249,9 @@ def evaluate_support_resistance_for_ML(hist, verbose = True, sensibility = 5):
 
     # get the next price
     resistance = list_counts[index_next_price]
+    # list_resistances will be the list of the resistances
+    list_resistances = list_counts[index_next_price:]
+    list_supports = list_counts[:index_previous_price]
     # get the previous price
     support = list_counts[index_previous_price]
     if verbose:
@@ -262,7 +264,7 @@ def evaluate_support_resistance_for_ML(hist, verbose = True, sensibility = 5):
         print(f'The support is {support}')
         print('')
 
-    return resistance, support, list_counts, current_price
+    return resistance, support, list_counts, current_price, list_resistances, list_supports
 
 def plot_support_resistance(hist, resistance = None, support = None, list_counts = None, current_price = None):
     if resistance is None or support is None or list_counts is None or current_price is None:
