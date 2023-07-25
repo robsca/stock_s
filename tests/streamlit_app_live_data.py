@@ -6,7 +6,7 @@ date:   2023-07-17 10:34:58.350766
 
 import streamlit as st
 st.set_page_config(layout="wide")
-from utils import *
+from scripts.utils import *
 import datetime
 import pandas as pd
 from datab import Database_Transactions

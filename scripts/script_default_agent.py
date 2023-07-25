@@ -1,18 +1,12 @@
-''' 
-The idea is that we give the model the minimum amount of information and let it figure out the rest.
-- take the data for the month of January
-
-'''
 import pandas as pd
 import yfinance as yf
-from utils import evaluate_support_resistance, evaluate_support_resistance_for_ML
-from model_base import Linear_QNet, QTrainer
+from scripts.utils import *
+from scripts.model import Linear_QNet, QTrainer
 import random
 import streamlit as st
 import plotly.graph_objects as go
 import torch
 import os
-st.set_page_config(layout="wide")
 from collections import deque
 
 MAX_MEMORY = 100_000
@@ -23,6 +17,7 @@ class AGENT:
     def __init__(self):
         self.model, self.trainer = self.create_model()
         self.memory = deque(maxlen=100_000)
+        self.model_name = 'model'
 
     def create_model(self):
         # now feed each day of february and calculate the resistance and support
@@ -223,28 +218,15 @@ class AGENT:
         hist = hist_complete.iloc[0:i]
         state = self.get_state_option_2(i, hist_complete = hist_complete)
         action, action_string = self.get_action_from_state(state, with_string=True)
-        #action, action_string = _get_random_action(with_string=True)
         next_state = self.get_next_state(i, option=2, hist = hist_complete)
         reward = self.get_reward(state, action, next_state)
         done = self.get_done(i, score, hist)
-        # train short memory
         self.train_short_memory( state, action, reward, next_state, done)
-        # remember
         self.remember(state, action, reward, next_state, done)                        
-        # reverse the dataframe
         if done or i == len(hist_complete) - 1:
             self.train_long_memory()
         return action_string
-    
 
-if __name__ == '__main__':
-    agent = AGENT()
-    data = yf.download(tickers='TSLA', period='1y', interval='1d')
-    hist_complete = data.copy()
-    hist_complete.reset_index(inplace=True)
-
-    # use the agent
-    for i in range(3, len(hist_complete)):
-        # use the agent to predict a action
-        action_string = agent.step_agent(hist_complete, leverage=1)
-        st.write(action_string)
+def function(hist):
+    agent = AGENT()   
+    return agent.step_agent(hist)

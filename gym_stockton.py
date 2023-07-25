@@ -28,7 +28,15 @@ class StocktonGym:
         c1,c2 = st.columns(2)
         self.plot_box = c1.empty()
         self.plot_box_1  = c2.empty()
-        self.pie_plot_box= st.sidebar.empty()
+
+        self.form2 = st.sidebar.form(key='my_form2')
+        c1,c2 = self.form2.columns(2)
+        with self.form2:
+            self.initial_score = st.number_input(label='Capital', value=1000.00, step=1.00)
+            self.start_simulation_button = c1.form_submit_button('Start Simulation')
+            self.stop_simulation = c2.form_submit_button('Stop Simulation')
+            self.pie_plot_box= st.empty()
+            self.leverage = st.number_input(label='Leverage', value=1.00, step=1.00, min_value=1.00, max_value=100.00)
 
         self.form = st.sidebar.form(key='my_form')
         with self.form:
@@ -39,14 +47,6 @@ class StocktonGym:
             # submit button
             self.submit_button = st.form_submit_button(label='Submit')
         
-        self.form2 = st.sidebar.form(key='my_form2')
-        c1,c2 = self.form2.columns(2)
-        with self.form2:
-            self.initial_score = st.number_input(label='Capital', value=1000.00, step=1.00)
-            self.start_simulation_button = c1.form_submit_button('Start Simulation')
-            self.stop_simulation = c2.form_submit_button('Stop Simulation')
-            self.leverage = st.number_input(label='Leverage', value=1.00, step=1.00, min_value=1.00, max_value=100.00)
-
         self.hist = self._get_data(self.interval)
         # buy and sell buttons
         self.position_history = pd.DataFrame(columns=['Date', 'Position_type', 'Open_price', 'Close_price', 'Profit', 'Difference_between_open_and_close'])
@@ -56,7 +56,6 @@ class StocktonGym:
     def custom_function(self, hist, i):
         return self.custom_function_(hist)
         
- 
     def _handle_events(self):
         if self.stop_simulation:
             st.stop()
@@ -113,10 +112,12 @@ class StocktonGym:
         scores = []
         hist_complete = self.hist
         # start the loop
+        custom_expander = st.sidebar.expander(label='Custom Function Output')
         for i in range(hist_complete.shape[0]):
             i = i + 1
             hist = hist_complete.iloc[0:i]
-            action_string = self.custom_function(hist, i = i)#, leverage=self.leverage)
+            with custom_expander:
+                action_string = self.custom_function(hist, i = i)#, leverage=self.leverage)
             if i > 3:
                 next_price = hist['Close'].iloc[-1]
                 last_price = hist['Close'].iloc[-2]

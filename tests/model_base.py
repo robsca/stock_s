@@ -73,7 +73,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 import os
 
-from utils import *
+from scripts.utils import *
 
 class Linear_QNet(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
@@ -103,8 +103,6 @@ class Linear_QNet(nn.Module):
 
     def predict(self, state):
         return self.forward(state)
-
-
 
 class QTrainer:
     def __init__(self, model, lr, gamma):
