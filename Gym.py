@@ -9,9 +9,92 @@ import streamlit as st
 import plotly.graph_objects as go
 import time
 import random
+import numpy as np
 
+class Analyser:
+    def __init__(self):
+        pass
+
+    def MACD(self,hist):
+        # MACD
+        exp1 = hist.Close.ewm(span=12, adjust=False).mean()
+        exp2 = hist.Close.ewm(span=26, adjust=False).mean()
+        macd = exp1 - exp2
+        signal = macd.ewm(span=9, adjust=False).mean()
+        hist['MACD'] = macd
+        hist['Signal'] = signal
+        hist['Histogram'] = hist['MACD'] - hist['Signal']
+        return hist
+    
+    def RSI(self,hist):
+        delta = hist['Close'].diff()
+        up_days = delta.copy()
+        up_days[delta<=0]=0.0
+        down_days = abs(delta.copy())
+        down_days[delta>0]=0.0
+        RS_up = up_days.ewm(com=13, adjust=False).mean()
+        RS_down = down_days.ewm(com=13, adjust=False).mean()
+        RS = RS_up/RS_down
+        RSI = 100.0 - (100.0/(1.0+RS))
+        hist['RSI'] = RSI
+        return hist
+    
+    def BollingerBands(self,hist):
+        hist['MA20'] = hist['Close'].rolling(20).mean()
+        hist['20dSTD'] = hist['Close'].rolling(20).std(ddof=0)
+        hist['Upper'] = hist['MA20'] + (hist['20dSTD'] * 2)
+        hist['Lower'] = hist['MA20'] - (hist['20dSTD'] * 2)
+        return hist
+    
+    def ATR(self,hist):
+        hist['H-L']=abs(hist['High']-hist['Low'])
+        hist['H-PC']=abs(hist['High']-hist['Close'].shift(1))
+        hist['L-PC']=abs(hist['Low']-hist['Close'].shift(1))
+        hist['TR']=hist[['H-L','H-PC','L-PC']].max(axis=1)
+        hist['ATR']=hist['TR'].rolling(20).mean()
+        return hist
+    
+    def OBV(self,hist):
+        hist['OBV']=np.where(hist['Close'] > hist['Close'].shift(1), hist['Volume'],\
+        np.where(hist['Close'] < hist['Close'].shift(1),-hist['Volume'],0)).cumsum()
+        return hist
+    
+    def analyser(self, hist, mode = 'MACD', return_fig = False):
+        if mode == 'MACD':
+            hist = self.MACD(hist)
+            columns = ['MACD', 'Signal', 'Histogram']
+        elif mode == 'RSI':
+            hist = self.RSI(hist)
+            columns = ['RSI']
+        elif mode == 'BollingerBands':
+            hist = self.BollingerBands(hist)
+            columns = ['Close', 'Upper', 'Lower', 'MA20']
+        elif mode == 'ATR':
+            hist = self.ATR(hist)
+            columns = ['ATR']
+        elif mode == 'OBV':
+            hist = self.OBV(hist)
+            columns = ['OBV']
+
+        #st.stop()
+        if return_fig:
+            try:
+                fig = go.Figure()
+                for c in columns:
+                    fig.add_trace(go.Scatter(x=hist.index, y=hist[c], mode='lines', name=c))
+                # add hist as candlestick
+                fig.add_trace(go.Candlestick(x=hist.index,
+                        open=hist['Open'],
+                        high=hist['High'],
+                        low=hist['Low'],
+                        close=hist['Close']))
+                    
+                return fig
+            except:
+                pass
+        else:
+            return hist
 class StocktonGym:
-
     def DEFAULT_CUSTOM_FUNCTION(self, hist):
         if random.randint(0, 200) < 75:
             action_string = 'buy'
@@ -23,12 +106,14 @@ class StocktonGym:
     
     def __init__(self):
         # create a form to get the ticker and interval
+        self.analysis_mode = st.sidebar.selectbox(label = 'Select Analysis Mode', options=['MACD', 'RSI', 'BollingerBands', 'ATR', 'OBV'])
         self.score_box = st.sidebar.empty()
         self.position_history_box = st.empty()
         c1,c2 = st.columns(2)
         self.plot_box_entire = st.empty()
         self.plot_box = c1.empty()
         self.plot_box_1  = c2.empty()
+        self.plot_box_2  = st.empty()
 
         self.form2 = st.sidebar.form(key='my_form2')
         c1,c2 = self.form2.columns(2)
@@ -156,11 +241,16 @@ class StocktonGym:
                     fig.add_annotation(x=row['Date'], y=row['Open_price'], text="S", showarrow=False, arrowhead=1, font=dict(color="red", size=14))
                 elif row['Position_type'] == 'hold':
                     fig.add_annotation(x=row['Date'], y=row['Open_price'], text="H", showarrow=False, arrowhead=1, font=dict(color="blue", size=14))
-
+            # add macd
             self.plot_box.plotly_chart(fig, use_container_width=True)
+            analyser_fig = Analyser().analyser(hist, mode=self.analysis_mode, return_fig=True)
+            self.plot_box_2.plotly_chart(analyser_fig, use_container_width=True)
+            
             fig = go.Figure()
             # add the score
             fig.add_trace(go.Scatter(x=hist.index, y=scores, mode='lines', name='Profit'))
+            # add hist as candlestick
+          
             self.plot_box_1.plotly_chart(fig, use_container_width=True)
             # add the pie chart
             # filter the position history for buy and sell

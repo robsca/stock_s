@@ -19,4 +19,11 @@
 
     DESCRIPTION
 
-    What's the best approach to get live stock data from Y fianance?
+    The idea is to create an environment that allows to backtest custom RL model.
+    The first goal is to create an environment to try RL models in the stock market.
+
+
+    TO DO:
+    - Create a hosted connection to train the models
+    
+
