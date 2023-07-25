@@ -6,10 +6,13 @@ The idea is that we give the model the minimum amount of information and let it 
 import pandas as pd
 import yfinance as yf
 import streamlit as st
+st.set_page_config(layout="wide")
 import plotly.graph_objects as go
 import time
 import random
 import numpy as np
+from plotly.subplots import make_subplots
+
 
 class Analyser:
     def __init__(self):
@@ -79,7 +82,8 @@ class Analyser:
         #st.stop()
         if return_fig:
             try:
-                fig = go.Figure()
+                # fig with secondary y axis
+                fig = make_subplots(specs=[[{"secondary_y": True}]])
                 for c in columns:
                     fig.add_trace(go.Scatter(x=hist.index, y=hist[c], mode='lines', name=c))
                 # add hist as candlestick
@@ -87,7 +91,7 @@ class Analyser:
                         open=hist['Open'],
                         high=hist['High'],
                         low=hist['Low'],
-                        close=hist['Close']))
+                        close=hist['Close']), secondary_y=True)
                     
                 return fig
             except:

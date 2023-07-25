@@ -17,7 +17,7 @@ class AGENT:
     def __init__(self):
         self.model, self.trainer = self.create_model()
         self.memory = deque(maxlen=100_000)
-        self.model_name = 'HoldingAgent'
+        self.model_name = 'Strategy_1Agent'
 
     def create_model(self):
         # now feed each day of february and calculate the resistance and support
@@ -229,4 +229,4 @@ class AGENT:
 
 def function(hist):
     agent = AGENT()   
-    return 'hold'
+    return agent.step_agent(hist)
