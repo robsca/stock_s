@@ -33,6 +33,7 @@ class StocktonGym:
         self.form2 = st.sidebar.form(key='my_form2')
         c1,c2 = self.form2.columns(2)
         with self.form2:
+            self.observer = st.checkbox('Observer Mode', value=False)
             self.initial_score = st.number_input(label='Capital', value=1000.00, step=1.00)
             self.start_simulation_button = c1.form_submit_button('Start Simulation', use_container_width=True)
             self.stop_simulation = c2.form_submit_button('Stop Simulation', use_container_width=True)
@@ -173,7 +174,11 @@ class StocktonGym:
             fig = go.Figure(data=[go.Pie(labels=['Buy', 'Sell', 'Hold'], values=[number_of_buys, number_of_sells, number_of_holds])])
             self.pie_plot_box.plotly_chart(fig, use_container_width=True)
             # wait for a second
-            time.sleep(1)
+            
+            if self.observer:
+                time.sleep(0.5)
+            else:
+                time.sleep(0.1)
 
     def run(self):
         self._handle_events()
