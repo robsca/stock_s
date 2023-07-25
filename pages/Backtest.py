@@ -7,7 +7,6 @@ from Gym import StocktonGym
 import random
 from scripts.agent import AGENT
 import streamlit as st
-st.set_page_config(layout="wide")
 from io import StringIO
 from contextlib import redirect_stdout
 from streamlit_ace import st_ace
