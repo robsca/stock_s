@@ -39,6 +39,7 @@ if __name__ == '__main__':
             f.write(model_code)
         with open('scripts/utils.py', 'w') as f:
             f.write(utils_code)
+            
     agent_code = db.get_agent_from_project(project_name)[0][0]
     model_code = db.get_model_from_project(project_name)[0][0]
     utils_code = db.get_utils_from_project(project_name)[0][0]
