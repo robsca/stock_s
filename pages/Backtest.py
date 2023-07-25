@@ -3,7 +3,7 @@ The idea is that we give the model the minimum amount of information and let it 
 - take the data for the month of January
 
 '''
-from gym_stockton import StocktonGym
+from Gym import StocktonGym
 import random
 from scripts.agent import AGENT
 import streamlit as st
