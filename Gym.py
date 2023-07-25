@@ -26,6 +26,7 @@ class StocktonGym:
         self.score_box = st.sidebar.empty()
         self.position_history_box = st.empty()
         c1,c2 = st.columns(2)
+        self.plot_box_entire = st.empty()
         self.plot_box = c1.empty()
         self.plot_box_1  = c2.empty()
 
@@ -33,19 +34,19 @@ class StocktonGym:
         c1,c2 = self.form2.columns(2)
         with self.form2:
             self.initial_score = st.number_input(label='Capital', value=1000.00, step=1.00)
-            self.start_simulation_button = c1.form_submit_button('Start Simulation')
-            self.stop_simulation = c2.form_submit_button('Stop Simulation')
+            self.start_simulation_button = c1.form_submit_button('Start Simulation', use_container_width=True)
+            self.stop_simulation = c2.form_submit_button('Stop Simulation', use_container_width=True)
             self.pie_plot_box= st.empty()
             self.leverage = st.number_input(label='Leverage', value=1.00, step=1.00, min_value=1.00, max_value=100.00)
 
         self.form = st.sidebar.form(key='my_form')
         with self.form:
+            self.submit_button = st.form_submit_button(label='Submit', use_container_width=True)
             self.ticker = st.selectbox(label = 'Select Ticker', options=['TSLA', 'eurusd=x', 'BTC-USD', 'ETH-USD', 'AAPL', 'MSFT', 'AMZN', 'GOOG', 'FB', 'TSLA', 'NVDA', 'PYPL', 'ADBE', 'NFLX', 'CMCSA', 'PEP', 'COST', 'TMUS', 'AVGO', 'QCOM', 'INTC', 'TXN', 'CHTR', 'SBUX', 'AMGN', 'AMD', 'GILD', 'BKNG', 'FISV', 'MDLZ', 'INTU', 'ISRG', 'ZM', 'ADP', 'MU', 'CSX', 'VRTX', 'ATVI', 'ILMN', 'REGN', 'ADI', 'BIIB', 'AMAT', 'NXPI', 'ADSK', 'MNST', 'LRCX', 'JD', 'EBAY', 'KHC', 'BIDU', 'WBA', 'MRNA', 'MELI', 'EXC', 'WDC', 'LULU', 'ROST', 'CTSH', 'EA', 'MAR', 'WDAY', 'ORLY', 'XEL', 'PAYX', 'DXCM', 'SNPS', 'NTES', 'CDNS', 'SGEN', 'VRSK', 'CTAS', 'CPRT', 'XLNX', 'FAST', 'MXIM', 'DLTR', 'SPLK', 'CERN', 'ANSS', 'SWKS', 'ASML', 'IDXX', 'CDW', 'CHKP', 'PCAR', 'VRSN', 'TCOM', 'ULTA', 'FOXA', 'FOX', 'SGMS'])
             self.interval = st.selectbox(label = 'Select Interval', options=['1m', '2m', '5m', '15m', '30m', '1h', '4h','1d', '5d', '1wk', '1mo', '3mo'], index=7)
             self.start_date = st.date_input('Start Date', value=pd.to_datetime('2022-01-01'))
             self.end_date = st.date_input('End Date', value=pd.to_datetime('2022-12-31'))
             # submit button
-            self.submit_button = st.form_submit_button(label='Submit')
         
         self.hist = self._get_data(self.interval)
         # buy and sell buttons
@@ -67,7 +68,7 @@ class StocktonGym:
                         high=self.hist['High'],
                         low=self.hist['Low'],
                         close=self.hist['Close'])])
-            self.plot_box.plotly_chart(fig, use_container_width=True)
+            self.plot_box_entire.plotly_chart(fig, use_container_width=True)
         if self.start_simulation_button:
             self.start_simulation()
     

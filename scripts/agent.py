@@ -17,7 +17,7 @@ class AGENT:
     def __init__(self):
         self.model, self.trainer = self.create_model()
         self.memory = deque(maxlen=100_000)
-        self.model_name = self.model.__class__.__name__
+        self.model_name = 'model'
 
     def create_model(self):
         # now feed each day of february and calculate the resistance and support
