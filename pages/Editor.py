@@ -10,6 +10,10 @@ from datab import Database_Scripts
 db = Database_Scripts('Projects')
 scripts = db.select()
 scripts = [script[0] for script in scripts]
+if len(scripts) == 0:
+    #
+    st.info('No projects found. Create a new project.')
+    st.stop()
 project_name = st.sidebar.selectbox('Select a project', scripts)
 
 def get_code(path='scripts/script_default_agent.py'):
