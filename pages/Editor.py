@@ -1,6 +1,8 @@
 # get code from script_default_agent.py
 from streamlit_ace import st_ace
 import streamlit as st
+import tempfile
+
 st.set_page_config(layout="wide")
 from datab import Database_Scripts
 # get all the scripts from the database
@@ -44,55 +46,33 @@ if submit_button and unique_project_name:
 save = st.sidebar.button('Save', use_container_width=True)
 restore_base = c3.button('Restore Default', use_container_width=True)
 
+agent_code = db.get_agent_from_project(project_name)[0][0]
+model_code = db.get_model_from_project(project_name)[0][0]
+utils_code = db.get_utils_from_project(project_name)[0][0]
+
 if radio == 'Agent':
-    value = get_code_from_db(project_name=project_name)[2]
+    value = agent_code
 elif radio == 'Model':
-    value = get_code_from_db(project_name=project_name)[1]
+    value = model_code
 elif radio == 'Utils':
-    value = get_code_from_db(project_name=project_name)[3]
+    value = utils_code
 
 code_area = st_ace(value=value, language='python', theme='monokai', keybinding='vscode', font_size=14, tab_size=4, show_gutter=True, show_print_margin=True, wrap=True, auto_update=True, readonly=False, key=None)
 
 if save and radio == 'Agent':
-    with open('scripts/agent.py', 'w') as f:
-        f.write(code_area)
-        # update the agent from project
-        db.update_agent_from_project(project_name=project_name, Agent=code_area)
+    db.update_agent_from_project(project_name=project_name, Agent=code_area)
+    agent_code = db.get_agent_from_project(project_name)[0][0]
      
-    st.balloons()
-    st.experimental_rerun()
 elif save and radio == 'Model':
-    with open('scripts/model.py', 'w') as f:
-        f.write(code_area)
-        db.update_model_from_project(project_name=project_name, Model=code_area)
-
-    st.balloons()
-    st.experimental_rerun()
+    db.update_model_from_project(project_name=project_name, Model=code_area)
+    model_code = db.get_model_from_project(project_name)[0][0]
     # update the model from project
-elif save and radio == 'Utils':
-    with open('scripts/utils.py', 'w') as f:
-        f.write(code_area)
-        # update the utils from project
-        db.update_utils_from_project(project_name=project_name, Utils=code_area)
-    st.balloons()
-    st.experimental_rerun()
-    # update the database
 
+elif save and radio == 'Utils':
+    db.update_utils_from_project(project_name=project_name, Utils=code_area)
+    utils_code = db.get_utils_from_project(project_name)[0][0]
 
 if restore_base:
-    # write the default script into the script_default_agent.py
-    with open('scripts/agent.py', 'w') as f:
-        f.write(get_code('scripts/script_default_agent.py'))
-        # save the default script into the database
-        
-    # write the default script into the script_default_model.py
-    with open('scripts/model.py', 'w') as f:
-        f.write(get_code('scripts/script_default_model.py'))
-
-    # write the default script into the script_default_utils.py
-    with open('scripts/utils.py', 'w') as f:
-        f.write(get_code('scripts/script_default_utils.py'))
-    
     db.update_from_project(project_name=project_name, Model=get_code('scripts/script_default_model.py'), Agent=get_code('scripts/script_default_agent.py'), Utils=get_code('scripts/script_default_utils.py'))
     st.balloons()
     st.experimental_rerun()
@@ -101,7 +81,6 @@ delete_button = st.sidebar.button('Delete Project', use_container_width=True)
 if delete_button:
     db.delete_from_project(project_name=project_name)
     st.experimental_rerun()
-
 
 db.close()
 

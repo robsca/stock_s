@@ -229,4 +229,4 @@ class AGENT:
 
 def function(hist):
     agent = AGENT()   
-    return 'sell'
+    return 'buy'
