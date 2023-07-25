@@ -229,4 +229,4 @@ class AGENT:
 
 def function(hist):
     agent = AGENT()   
-    return agent.step_agent(hist)
+    return 'sell'

@@ -78,6 +78,41 @@ class Database_Scripts:
     def update_from_project(self, project_name, Model, Agent, Utils):
         self.cur.execute(f"UPDATE {self.table_name} SET Model = ?, Agent = ?, Utils = ? WHERE Project_name = ?", (Model, Agent, Utils, project_name))
         self.conn.commit()
+    
+    def delete_from_project(self, project_name):
+        self.cur.execute(f"DELETE FROM {self.table_name} WHERE Project_name = ?", (project_name,))
+        self.conn.commit()
+
+    # update agent from project
+    def update_agent_from_project(self, project_name, Agent):
+        self.cur.execute(f"UPDATE {self.table_name} SET Agent = ? WHERE Project_name = ?", (Agent, project_name))
+        self.conn.commit()
+
+    # update model from project
+    def update_model_from_project(self, project_name, Model):
+        self.cur.execute(f"UPDATE {self.table_name} SET Model = ? WHERE Project_name = ?", (Model, project_name))
+        self.conn.commit()
+
+    # update utils from project
+    def update_utils_from_project(self, project_name, Utils):
+        self.cur.execute(f"UPDATE {self.table_name} SET Utils = ? WHERE Project_name = ?", (Utils, project_name))
+        self.conn.commit()
+    
+    # get agent from project
+    def get_agent_from_project(self, project_name):
+        self.cur.execute(f"SELECT Agent FROM {self.table_name} WHERE Project_name = ?", (project_name,))
+        return self.cur.fetchall()
+    
+    # get model from project
+    def get_model_from_project(self, project_name):
+        self.cur.execute(f"SELECT Model FROM {self.table_name} WHERE Project_name = ?", (project_name,))
+        return self.cur.fetchall()
+    
+    # get utils from project
+    def get_utils_from_project(self, project_name):
+        self.cur.execute(f"SELECT Utils FROM {self.table_name} WHERE Project_name = ?", (project_name,))
+        return self.cur.fetchall()
+    
 
 if __name__ == '__main__':
     # create a project
