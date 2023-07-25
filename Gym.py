@@ -162,9 +162,16 @@ class StocktonGym:
             fig.add_trace(go.Scatter(x=hist.index, y=scores, mode='lines', name='Profit'))
             self.plot_box_1.plotly_chart(fig, use_container_width=True)
             # add the pie chart
-            fig = go.Figure(data=[go.Pie(labels=['buy', 'sell', 'hold'], values=self.position_history['Position_type'].value_counts())])
+            # filter the position history for buy and sell
+            buy_ = self.position_history[self.position_history['Position_type'] == 'buy']
+            sell_ = self.position_history[self.position_history['Position_type'] == 'sell']
+            hold = self.position_history[self.position_history['Position_type'] == 'hold']
+
+            number_of_buys = buy_.shape[0]
+            number_of_sells = sell_.shape[0]
+            number_of_holds = hold.shape[0]
+            fig = go.Figure(data=[go.Pie(labels=['Buy', 'Sell', 'Hold'], values=[number_of_buys, number_of_sells, number_of_holds])])
             self.pie_plot_box.plotly_chart(fig, use_container_width=True)
-            
             # wait for a second
             time.sleep(1)
 
