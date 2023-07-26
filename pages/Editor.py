@@ -86,6 +86,13 @@ if delete_button:
     db.delete_from_project(project_name=project_name)
     st.experimental_rerun()
 
+if st.button('Write'):
+    with open('scripts/agent.py', 'w') as f:
+        f.write(agent_code)
+    with open('scripts/model.py', 'w') as f:
+        f.write(model_code)
+    with open('scripts/utils.py', 'w') as f:
+        f.write(utils_code)
 db.close()
 
 
