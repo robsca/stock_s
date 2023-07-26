@@ -8,7 +8,6 @@ import plotly.graph_objects as go
 import torch
 import os
 from collections import deque
-from Gym import Analyser
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
@@ -18,11 +17,11 @@ class AGENT:
     def __init__(self):
         self.model, self.trainer = self.create_model()
         self.memory = deque(maxlen=100_000)
-        self.model_name = 'HoldingAgent'
+        self.model_name = 'Strategy_1Agent'
 
     def create_model(self):
         # now feed each day of february and calculate the resistance and support
-        number_of_inputs = 63
+        number_of_inputs = 201
         number_of_hidden_neurons = 500
         number_of_outputs = 3
         # try to load the model
@@ -84,39 +83,20 @@ class AGENT:
         state = list_of_zeros + average
         return state
     
-    def get_state_option_2(self,i, hist_complete, mode = 'BollingerBands'):
+    def get_state_option_2(self,i, hist_complete):
         i = i-1
-
-        # current price is the close of the previous day
-        new_price = hist_complete.iloc[i]['Close']
-        average = hist_complete.iloc[:i]['Close'].mean()
-        average = [average , new_price]
-
-        hist_for_support_resistance = hist_complete.iloc[:200+i]
-        hist_for_support_resistance = hist_for_support_resistance[:200]
-        
-        resistance, support, list_counts, current_price, list_resistances, list_supports = evaluate_support_resistance_for_ML(hist_for_support_resistance, verbose=False, sensibility=5)
-        supports_and_resistances = list_counts
-
-        try:
-            index_current_price = supports_and_resistances.index(new_price)
-        except:
-            # get the closest price
-            index_current_price = min(supports_and_resistances, key=lambda x:abs(x-new_price))
-            index_current_price = supports_and_resistances.index(index_current_price)
-        
-        # Now we have the index of the current price
-        list_of_zeros = [0 for i in range(len(supports_and_resistances))]
-        # at the index of the current price we put 1
-        list_of_zeros[index_current_price] = 1
-        state = list_of_zeros + average
-        analyser_df = Analyser().analyser(hist_for_support_resistance, mode=mode, return_fig=False)
-        # get number of columns
-        number_of_columns = len(analyser_df.columns)
-        # now add those columns to the state
-        for i in range(number_of_columns):
-            state.append(analyser_df.iloc[-1][i])
-        return state
+        if i >= 200:
+            # current price is the close of the previous day
+            hist_till_today = hist_complete.iloc[:i]
+            new_price = hist_complete.iloc[i]['Close']
+            average = hist_complete.iloc[:i]['Close'].mean()
+            average = [average , new_price]
+            hist_for_support_resistance = hist_till_today.iloc[-50:]
+            hist_for_support_resistance = hist_for_support_resistance['Close'].tolist()
+            state = hist_for_support_resistance[-200:] + average
+            return state
+        else:
+            return [0 for i in range(201)]
     
     def get_reward(self,state, action, next_state):
         '''
@@ -130,21 +110,17 @@ class AGENT:
         current_price = state[-1]
         next_price = next_state[-1]
         if action == 0: # buy
-            index_current_price = state.index(1)
-            index_current_price_next_state = next_state.index(1)
-            if index_current_price_next_state > index_current_price or next_price > current_price:
+            if next_price > current_price:
                 return 1
-            elif index_current_price_next_state < index_current_price or next_price < current_price:
+            elif next_price < current_price:
                 return -1
             else:
                 return 0
         elif action == 1: # sell
             # find index of 1 in state
-            index_current_price = state.index(1)
-            index_current_price_next_state = next_state.index(1)
-            if index_current_price_next_state < index_current_price or next_price < current_price:
+            if next_price < current_price:
                 return 1
-            elif index_current_price_next_state > index_current_price or next_price > current_price:
+            elif next_price > current_price:
                 return -1
             else:
                 return 0
@@ -183,10 +159,10 @@ class AGENT:
         '''
         if finish row return true otherwise return false
         '''
-        if i == len(hist_complete) - 1 or score <= 0 or consecutive_mistakes >5:
-            done = True
-        else:
+        if i == len(hist_complete) - 1 or score < 0:
             done = False
+        else:
+            done = True
         return done
 
     def get_action_from_state(self, state, with_string=False):
@@ -221,19 +197,21 @@ class AGENT:
                         return out, classes[out]
                     return out
 
-    def step_agent(self, hist_complete, leverage=1, i=1, score=0):
-        hist = hist_complete.iloc[0:i]
-        state = self.get_state_option_2(i, hist_complete = hist_complete)
+    def step_agent(self, hist, i=1, score=0):
+        hist_until_today = hist.iloc[0:i]
+        state = self.get_state_option_2(i, hist_complete = hist)
         action, action_string = self.get_action_from_state(state, with_string=True)
-        next_state = self.get_next_state(i, option=2, hist = hist_complete)
+        next_state = self.get_next_state(i, option=2, hist = hist)
         reward = self.get_reward(state, action, next_state)
         done = self.get_done(i, score, hist)
         self.train_short_memory( state, action, reward, next_state, done)
         self.remember(state, action, reward, next_state, done)                        
-        if done or reward == -1:
+        if done or i == len(hist_complete) - 1:
             self.train_long_memory()
-        return action_string
+        return action_string, state, i
 
-def function(hist):
-    agent = AGENT()   
-    return agent.step_agent(hist_complete=hist)
+def function(hist,i):
+    agent = AGENT()  
+    action_string, state, i = agent.step_agent(hist,i)
+    st.success(f'{i} - {state} - {action_string}')
+    return action_string
