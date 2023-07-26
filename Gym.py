@@ -120,6 +120,7 @@ class StocktonGym:
         self.plot_box_1  = c2.empty()
         self.plot_box_2  = st.empty()
         self.score_box_text = st.empty()
+        self.pie_win_loose_box=st.empty()
 
         self.form2 = st.sidebar.form(key='my_form2')
         c1,c2 = self.form2.columns(2)
@@ -266,6 +267,12 @@ class StocktonGym:
             buy_ = self.position_history[self.position_history['Position_type'] == 'buy']
             sell_ = self.position_history[self.position_history['Position_type'] == 'sell']
             hold = self.position_history[self.position_history['Position_type'] == 'hold']
+            win_position = self.position_history[self.position_history['Profit'] > 0]
+            loose_position = self.position_history[self.position_history['Profit'] < 0]
+            number_of_win = win_position.shape[0]
+            number_of_lost = loose_position.shape[0]
+            fig = go.Figure(data=[go.Pie(labels=['Win', 'Lost'], values=[number_of_win, number_of_lost])])
+            self.pie_win_loose_box.plotly_chart(fig, use_container_width=True)
 
             number_of_buys = buy_.shape[0]
             number_of_sells = sell_.shape[0]
