@@ -272,8 +272,6 @@ class StocktonGym:
             
             if self.observer:
                 time.sleep(0.5)
-            else:
-                time.sleep(0.1)
 
     def run(self):
         self._handle_events()
