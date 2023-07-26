@@ -83,7 +83,6 @@ class AGENT:
         state = list_of_zeros + average
         return state
     
-    
     def get_state_option_2(self,i, hist_complete):
         i = i-1
         if i >= 200:
