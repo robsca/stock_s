@@ -54,7 +54,7 @@ if __name__ == '__main__':
     exec(whole_script)
     
     
-    def custom_function(hist, i)
+    def custom_function(hist, i):
         with StringIO() as buf, redirect_stdout(buf):
             function(hist, i)
             return function(hist,i)
