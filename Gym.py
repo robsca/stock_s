@@ -228,6 +228,9 @@ class StocktonGym:
                 self.position_history = position_history
                 # only sell and buy 
                 df_pos = self.position_history[self.position_history['Position_type'] != 'hold'] 
+                # add index
+                df_pos = df_pos.reset_index(drop=True)
+
                 # reverse the order
                 df_pos = df_pos.iloc[::-1]
                 self.position_history_box.dataframe(df_pos, use_container_width=True)
