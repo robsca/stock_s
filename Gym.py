@@ -119,6 +119,8 @@ class StocktonGym:
         self.plot_box = c1.empty()
         self.plot_box_1  = c2.empty()
         self.plot_box_2  = st.empty()
+        self.total_box = st.empty()
+        score_box_text = st.empty()
 
         self.form2 = st.sidebar.form(key='my_form2')
         c1,c2 = self.form2.columns(2)
@@ -203,7 +205,6 @@ class StocktonGym:
         score = self.initial_score
         scores = []
         hist_complete = self.hist
-        score_box_text = st.empty()
         # start the loop
         custom_expander = st.sidebar.expander(label='Custom Function Output')
         for i in range(hist_complete.shape[0]):
@@ -271,6 +272,7 @@ class StocktonGym:
             self.pie_plot_box.plotly_chart(fig, use_container_width=True)
             # wait for a second
             self.score_box_text.text(i)
+
             
             if self.observer:
                 time.sleep(0.5)
