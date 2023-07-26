@@ -197,9 +197,9 @@ class AGENT:
                         return out, classes[out]
                     return out
 
-    def step_agent(self, hist_complete, leverage=1, i=1, score=0):
+    def step_agent(self, hist, leverage=1, i=1, score=0):
         hist = hist_complete.iloc[0:i]
-        state = self.get_state_option_2(i, hist_complete = hist_complete)
+        state = self.get_state_option_2(i, hist_complete = hist)
         action, action_string = self.get_action_from_state(state, with_string=True)
         next_state = self.get_next_state(i, option=2, hist = hist_complete)
         reward = self.get_reward(state, action, next_state)
@@ -208,8 +208,10 @@ class AGENT:
         self.remember(state, action, reward, next_state, done)                        
         if done or i == len(hist_complete) - 1:
             self.train_long_memory()
-        return action_string
+        return action_string, state, i
 
-def function(hist):
-    agent = AGENT()   
-    return agent.step_agent(hist)
+def function(hist,i)
+    agent = AGENT()  
+    action_string, state, i = agent.step_agent(hist,i)
+    st.success(f'{i} - {state} - {action_string}')
+    return action_string

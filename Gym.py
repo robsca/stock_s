@@ -210,7 +210,7 @@ class StocktonGym:
             i = i + 1
             hist = hist_complete.iloc[0:i]
             with custom_expander:
-                action_string = self.custom_function(hist_complete = hist, i = i)#, leverage=self.leverage)
+                action_string = self.custom_function(hist = hist, i = i)#, leverage=self.leverage)
             if i > 3:
                 next_price = hist['Close'].iloc[-1]
                 last_price = hist['Close'].iloc[-2]
