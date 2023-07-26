@@ -54,10 +54,10 @@ if __name__ == '__main__':
     exec(whole_script)
     
     
-    def custom_function(hist):
+    def custom_function(hist, i)
         with StringIO() as buf, redirect_stdout(buf):
-            function(hist)
-            return function(hist)
+            function(hist, i)
+            return function(hist,i)
 
     #st.write(custom_function())
     gym.custom_function_ = custom_function
