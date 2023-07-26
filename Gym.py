@@ -270,7 +270,7 @@ class StocktonGym:
             fig = go.Figure(data=[go.Pie(labels=['Buy', 'Sell', 'Hold'], values=[number_of_buys, number_of_sells, number_of_holds])])
             self.pie_plot_box.plotly_chart(fig, use_container_width=True)
             # wait for a second
-            self.score_box_text.subheader(s{i})
+            self.score_box_text.subheader(f'N iterations: {i}')
 
             
             if self.observer:
