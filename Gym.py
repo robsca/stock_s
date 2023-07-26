@@ -119,8 +119,7 @@ class StocktonGym:
         self.plot_box = c1.empty()
         self.plot_box_1  = c2.empty()
         self.plot_box_2  = st.empty()
-        self.total_box = st.empty()
-        score_box_text = st.empty()
+        self.score_box_text = st.empty()
 
         self.form2 = st.sidebar.form(key='my_form2')
         c1,c2 = self.form2.columns(2)
@@ -271,7 +270,7 @@ class StocktonGym:
             fig = go.Figure(data=[go.Pie(labels=['Buy', 'Sell', 'Hold'], values=[number_of_buys, number_of_sells, number_of_holds])])
             self.pie_plot_box.plotly_chart(fig, use_container_width=True)
             # wait for a second
-            self.score_box_text.text(i)
+            self.score_box_text.subheader(s{i})
 
             
             if self.observer:
