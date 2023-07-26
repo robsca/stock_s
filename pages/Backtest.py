@@ -56,7 +56,6 @@ if __name__ == '__main__':
     
     def custom_function_1(hist, i):
         with StringIO() as buf, redirect_stdout(buf):
-            function(hist)
             return function(hist,i)
 
     #st.write(custom_function())
