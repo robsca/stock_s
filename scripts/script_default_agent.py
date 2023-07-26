@@ -17,11 +17,11 @@ class AGENT:
     def __init__(self):
         self.model, self.trainer = self.create_model()
         self.memory = deque(maxlen=100_000)
-        self.model_name = 'model'
+        self.model_name = 'Strategy_1Agent'
 
     def create_model(self):
         # now feed each day of february and calculate the resistance and support
-        number_of_inputs = 52
+        number_of_inputs = 201
         number_of_hidden_neurons = 500
         number_of_outputs = 3
         # try to load the model
@@ -83,33 +83,21 @@ class AGENT:
         state = list_of_zeros + average
         return state
     
+    
     def get_state_option_2(self,i, hist_complete):
         i = i-1
-
-        # current price is the close of the previous day
-        new_price = hist_complete.iloc[i]['Close']
-        average = hist_complete.iloc[:i]['Close'].mean()
-        average = [average , new_price]
-
-        hist_for_support_resistance = hist_complete.iloc[:200+i]
-        hist_for_support_resistance = hist_for_support_resistance[:200]
-        
-        resistance, support, list_counts, current_price, list_resistances, list_supports = evaluate_support_resistance_for_ML(hist_for_support_resistance, verbose=False, sensibility=5)
-        supports_and_resistances = list_counts
-
-        try:
-            index_current_price = supports_and_resistances.index(new_price)
-        except:
-            # get the closest price
-            index_current_price = min(supports_and_resistances, key=lambda x:abs(x-new_price))
-            index_current_price = supports_and_resistances.index(index_current_price)
-        
-        # Now we have the index of the current price
-        list_of_zeros = [0 for i in range(len(supports_and_resistances))]
-        # at the index of the current price we put 1
-        list_of_zeros[index_current_price] = 1
-        state = list_of_zeros + average
-        return state
+        if i >= 200:
+            # current price is the close of the previous day
+            hist_till_today = hist_complete.iloc[:i]
+            new_price = hist_complete.iloc[i]['Close']
+            average = hist_complete.iloc[:i]['Close'].mean()
+            average = [average , new_price]
+            hist_for_support_resistance = hist_till_today.iloc[-50:]
+            hist_for_support_resistance = hist_for_support_resistance['Close'].tolist()
+            state = hist_for_support_resistance[-200:] + average
+            return state
+        else:
+            return [0 for i in range(201)]
     
     def get_reward(self,state, action, next_state):
         '''
@@ -123,21 +111,17 @@ class AGENT:
         current_price = state[-1]
         next_price = next_state[-1]
         if action == 0: # buy
-            index_current_price = state.index(1)
-            index_current_price_next_state = next_state.index(1)
-            if index_current_price_next_state > index_current_price or next_price > current_price:
+            if next_price > current_price:
                 return 1
-            elif index_current_price_next_state < index_current_price or next_price < current_price:
+            elif next_price < current_price:
                 return -1
             else:
                 return 0
         elif action == 1: # sell
             # find index of 1 in state
-            index_current_price = state.index(1)
-            index_current_price_next_state = next_state.index(1)
-            if index_current_price_next_state < index_current_price or next_price < current_price:
+            if next_price < current_price:
                 return 1
-            elif index_current_price_next_state > index_current_price or next_price > current_price:
+            elif next_price > current_price:
                 return -1
             else:
                 return 0
