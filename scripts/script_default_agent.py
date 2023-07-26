@@ -210,7 +210,7 @@ class AGENT:
             self.train_long_memory()
         return action_string, state, i
 
-def function(hist,i)
+def function(hist,i):
     agent = AGENT()  
     action_string, state, i = agent.step_agent(hist,i)
     st.success(f'{i} - {state} - {action_string}')
