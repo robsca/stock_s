@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 import torch
 import os
 from collections import deque
+from Gym import Analyser
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
@@ -17,11 +18,11 @@ class AGENT:
     def __init__(self):
         self.model, self.trainer = self.create_model()
         self.memory = deque(maxlen=100_000)
-        self.model_name = 'Strategy_1Agent'
+        self.model_name = 'HoldingAgent'
 
     def create_model(self):
         # now feed each day of february and calculate the resistance and support
-        number_of_inputs = 52
+        number_of_inputs = 63
         number_of_hidden_neurons = 500
         number_of_outputs = 3
         # try to load the model
@@ -83,7 +84,7 @@ class AGENT:
         state = list_of_zeros + average
         return state
     
-    def get_state_option_2(self,i, hist_complete):
+    def get_state_option_2(self,i, hist_complete, mode = 'BollingerBands'):
         i = i-1
 
         # current price is the close of the previous day
@@ -109,6 +110,12 @@ class AGENT:
         # at the index of the current price we put 1
         list_of_zeros[index_current_price] = 1
         state = list_of_zeros + average
+        analyser_df = Analyser().analyser(hist_for_support_resistance, mode=mode, return_fig=False)
+        # get number of columns
+        number_of_columns = len(analyser_df.columns)
+        # now add those columns to the state
+        for i in range(number_of_columns):
+            state.append(analyser_df.iloc[-1][i])
         return state
     
     def get_reward(self,state, action, next_state):
@@ -176,10 +183,10 @@ class AGENT:
         '''
         if finish row return true otherwise return false
         '''
-        if i == len(hist_complete) - 1 or score < 0:
-            done = False
-        else:
+        if i == len(hist_complete) - 1 or score <= 0 or consecutive_mistakes >5:
             done = True
+        else:
+            done = False
         return done
 
     def get_action_from_state(self, state, with_string=False):
@@ -223,10 +230,10 @@ class AGENT:
         done = self.get_done(i, score, hist)
         self.train_short_memory( state, action, reward, next_state, done)
         self.remember(state, action, reward, next_state, done)                        
-        if done or i == len(hist_complete) - 1:
+        if done or reward == -1:
             self.train_long_memory()
         return action_string
 
 def function(hist):
     agent = AGENT()   
-    return agent.step_agent(hist)
+    return agent.step_agent(hist_complete=hist)

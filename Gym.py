@@ -98,6 +98,7 @@ class Analyser:
                 pass
         else:
             return hist
+        
 class StocktonGym:
     def DEFAULT_CUSTOM_FUNCTION(self, hist):
         if random.randint(0, 200) < 75:
