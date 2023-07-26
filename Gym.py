@@ -147,7 +147,7 @@ class StocktonGym:
         self.custom_function_ = self.DEFAULT_CUSTOM_FUNCTION
 
     def custom_function(self, hist, i):
-        return self.custom_function_(hist)
+        return self.custom_function_(hist, i)
         
     def _handle_events(self):
         if self.stop_simulation:
