@@ -56,8 +56,8 @@ if __name__ == '__main__':
     
     def custom_function(hist, i):
         with StringIO() as buf, redirect_stdout(buf):
-            function(hist, i)
-            return function()
+            function()
+            return function(hist, i)
 
     #st.write(custom_function())
     gym.custom_function_ = custom_function
