@@ -198,7 +198,7 @@ class AGENT:
                     return out
 
     def step_agent(self, hist, leverage=1, i=1, score=0):
-        hist = hist_complete.iloc[0:i]
+        hist = hist.iloc[0:i]
         state = self.get_state_option_2(i, hist_complete = hist)
         action, action_string = self.get_action_from_state(state, with_string=True)
         next_state = self.get_next_state(i, option=2, hist = hist_complete)
