@@ -100,7 +100,7 @@ class Analyser:
             return hist
         
 class StocktonGym:
-    def DEFAULT_CUSTOM_FUNCTION(self, hist):
+    def DEFAULT_CUSTOM_FUNCTION(self, hist, i):
         if random.randint(0, 200) < 75:
             action_string = 'buy'
         elif random.randint(0, 200) < 150:
