@@ -16,7 +16,7 @@ import streamlit as st
 from streamlit_ace import st_ace
 
 code = """
-# watch out with the """"
+# watch out with the "
 import yfinance as yf
 import plotly.graph_objects as go
 import datetime
