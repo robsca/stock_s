@@ -296,7 +296,7 @@ if __name__ == '__main__':
         '''
         Random function
         '''
-        random.choice(['buy','sell','hold'])
+        action_string = random.choice(['buy','sell','hold'])
         return action_string
     
     gym.custom_function_ = custom_function_
