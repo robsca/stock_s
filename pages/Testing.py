@@ -4,41 +4,37 @@ author: Roberto Scalas
 date:   2023-07-17 10:34:58.351165
 '''
 from scripts.utils import *
-from datab import Database_Transactions
-
-# delete the database
-
-# db_transactions = Database_Transactions()
-# db_transactions.delete_table()
-# db_transactions.close()
-
+import openai
 import streamlit as st
+st.set_page_config(layout="wide")
+
 from streamlit_ace import st_ace
 
-code = """
-# watch out with the "
+code = '''
+import numpy as np
 import yfinance as yf
 import plotly.graph_objects as go
-import datetime
-
 options_for_ticker = [
     'eurusd=x',
     'gbpusd=x',
     'usdjpy=x',
-]
+    'usdchf=x',
+    'TSLA',
+    'AAPL',
+    'MSFT',
+    'AMZN',
+    'GOOG',
+    'VUSA.L',
 
+]
+import datetime
 ticker = st.sidebar.selectbox('Select ticker', options_for_ticker)
 interval = st.sidebar.selectbox('Select interval', ['1d', '1h', '30m', '15m', '5m', '1m'])
 start_date = st.sidebar.date_input('Start date', value=datetime.date(2021, 1, 1))
 end_date = st.sidebar.date_input('End date', value=datetime.date(2021, 7, 1))
-
 def function():
-    '''
-    This function will be execute automatically
-    '''
-
     data = yf.download(ticker, start=start_date, end=end_date, interval=interval)
-    # add plot 
+    # add plotly graph
     fig = go.Figure()
     fig.add_trace(go.Candlestick(x=data.index,
                     open=data['Open'],
@@ -51,9 +47,64 @@ def function():
         yaxis_title='Stock Price (USD per Shares)')
     st.plotly_chart(fig, use_container_width=True)
     return data
-    
-"""
+
+
+'''
 code = st_ace(value=code, language='python', theme='monokai', keybinding='vscode', font_size=12, tab_size=4, show_gutter=True, show_print_margin=True, wrap=True, auto_update=True, readonly=False, key=None)
+
+openai.api_key = st.sidebar.text_input('OpenAI API Key', value='', max_chars=None, key=None, type='password', help=None)
+
+def chat_with_gpt(prompt):
+    chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
+    answer = chat_completion.choices[0].message['content']
+    with st.expander('Answer'):
+        st.markdown(answer)
+    return answer
+
+# create a chat with gpt
+import datetime
+from datab import Database_Questions
+db = Database_Questions('Chat')
+# get the conversations
+conversations = db.select()
+if len(conversations) > 0:
+    # get unique conversations ids 
+    conversations_ids = list(set([conversation[0] for conversation in conversations]))
+    with st.sidebar.form(key='my_form_for_conversation'):
+        conversation_id = st.selectbox('Select conversation', conversations_ids)
+        submit_button = st.form_submit_button(label='Submit', help=None, on_click=None, args=None, kwargs=None)
+    if submit_button:
+        # get all the questions and answers from the conversation
+        questions_answers = db.get_from_conversation_id(conversation_id)
+        with st.expander('Conversation'):
+            # each row contains a question and an answer
+            for row in questions_answers:
+                # use the chat module
+                with st.chat_message('User'):
+                    st.write(row[1])
+                with st.chat_message('GPT'):
+                    st.write(row[2])
+
+    # create a delete button
+    if st.sidebar.button(f'Delete conversation: {conversation_id}', use_container_width=True):
+        db.delete_single(conversation_id)
+        # reload the page
+        st.experimental_rerun()
+else:
+    conversation_id = 'First conversation'
+
+
+# create a new question form
+with st.sidebar.form(key='my_form'):
+    question = st.text_area('Question', value='', max_chars=None, key=None)
+    submit_button = st.form_submit_button(label='Submit', help=None, on_click=None, args=None, kwargs=None)
+
+if submit_button:
+    # get the answer and save it
+    answer = chat_with_gpt(question)
+    # get conversation id
+    db.insert(conversation_id, question, answer, datetime.datetime.now())
+
 
 # Store the code as a string
 stored_code = code
