@@ -15,7 +15,11 @@ LR = 0.001
 
 class AGENT:
     def __init__(self):
-        self.model_name = 'Strategy_1_Agent'
+        self.model_name = 'Moving Average Strategy'
+        self.description = '''
+        If the short moving average is lower the long moving average, then it's a buy, otherwise is a sell.
+        We are going to add ad intensity signal considering the standard deviation level to select when holding a position.
+        '''
         
     def moving_average_crossing_strategy(self,hist, i):
         short_window = 25
