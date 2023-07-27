@@ -73,17 +73,28 @@ if len(conversations) > 0:
     with st.sidebar.form(key='my_form_for_conversation'):
         conversation_id = st.selectbox('Select conversation', conversations_ids)
         submit_button = st.form_submit_button(label='Submit', help=None, on_click=None, args=None, kwargs=None)
+        new_conversation = st.form_submit_button(label='New Chat', help=None, on_click=None, args=None, kwargs=None)
     if submit_button:
         # get all the questions and answers from the conversation
         questions_answers = db.get_from_conversation_id(conversation_id)
         with st.expander('Conversation'):
             # each row contains a question and an answer
-            for row in questions_answers:
-                # use the chat module
-                with st.chat_message('User'):
-                    st.write(row[1])
-                with st.chat_message('GPT'):
-                    st.write(row[2])
+            if len(questions_answers) > 0:
+                for row in questions_answers:
+                    # use the chat module
+                    with st.chat_message('User'):
+                        st.write(row[1])
+                    with st.chat_message('GPT'):
+                        st.write(row[2])
+            else:
+                st.write('No questions and answers for this conversation')
+        # new conversation button
+    if new_conversation:
+        conversation_id = datetime.datetime.now()
+        # reload the page
+        # save a empty conversation
+        db.insert(conversation_id, '', '', datetime.datetime.now())
+        st.experimental_rerun()
 
     # create a delete button
     if st.sidebar.button(f'Delete conversation: {conversation_id}', use_container_width=True):
