@@ -52,7 +52,6 @@ def function():
 '''
 code = st_ace(value=code, language='python', theme='monokai', keybinding='vscode', font_size=12, tab_size=4, show_gutter=True, show_print_margin=True, wrap=True, auto_update=True, readonly=False, key=None)
 
-openai.api_key = st.sidebar.text_input('OpenAI API Key', value='', max_chars=None, key=None, type='password', help=None)
 
 def chat_with_gpt(prompt):
     chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
@@ -107,6 +106,7 @@ else:
 
 # create a new question form
 with st.sidebar.form(key='my_form'):
+    openai.api_key = st.sidebar.text_input('OpenAI API Key', value='', max_chars=None, key=None, type='password', help=None)
     question = st.text_area('Question', value='', max_chars=None, key=None)
     submit_button = st.form_submit_button(label='Submit', help=None, on_click=None, args=None, kwargs=None)
 
