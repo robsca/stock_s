@@ -292,7 +292,7 @@ class StocktonGym:
 if __name__ == '__main__':
     gym = StocktonGym()
     
-    def custom_function_(hist,i)
+    def custom_function_(hist,i):
         '''
         Random function
         '''
