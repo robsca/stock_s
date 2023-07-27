@@ -6,3 +6,4 @@ plotly
 yfinance
 torch
 streamlit-ace
+openai
