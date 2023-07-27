@@ -1,43 +1,48 @@
 import sqlite3 
-
 # create a database connection
-class Database_Transactions:
-    def __init__(self):
-        self.conn = sqlite3.connect('transactions.db')
+class Database_Questions:
+    def __init__(self, table_name):
+        self.table_name = table_name
+        self.conn = sqlite3.connect(table_name + '.db')
         self.cur = self.conn.cursor()
         self.create_table()
 
     def create_table(self):
-        self.cur.execute('''CREATE TABLE IF NOT EXISTS transactions
-            (Date text, Type text, Price real, Quantity integer, Total real, Ticket text, Active integer, Close_price real, Close_value real, Result real, Result_percent real)''')
+        # each table contains a model, agent and utils script
+        self.cur.execute(f'''CREATE TABLE IF NOT EXISTS {self.table_name}
+            (conversation_id text, question text, answer text, date text)''')
         self.conn.commit()
 
-    def insert(self, Date, Type, Price, Quantity, Total, Ticker, Active=1, Close_price=0, Close_value=0, Result=0, Result_percent=0):
-        self.cur.execute("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (Date, Type, Price, Quantity, Total, Ticker, Active, Close_price, Close_value, Result, Result_percent))
+    def insert(self, conversation_id, question, answer, date):
+        self.cur.execute(f"INSERT INTO {self.table_name} VALUES (?, ?, ?, ?)", (conversation_id, question, answer, date))
         self.conn.commit()
 
     def select(self):
-        self.cur.execute("SELECT * FROM transactions")
-        return self.cur.fetchall()
+        self.cur.execute(f"SELECT * FROM {self.table_name}")
+        # drop if both question and answer are empty
+        data = self.cur.fetchall()
+        data = [row for row in data if row[1] != '' or row[2] != '']
+        return data
     
     def delete(self):
-        self.cur.execute("DELETE FROM transactions")
+        self.cur.execute(f"DELETE FROM {self.table_name}")
+        self.conn.commit()
+
+    def delete_single(self, conversation_id):
+        self.cur.execute(f"DELETE FROM {self.table_name} WHERE conversation_id = ?", (conversation_id,))
         self.conn.commit()
 
     def close(self):
         self.conn.close()
 
     def delete_table(self):
-        self.cur.execute("DROP TABLE transactions")
+        self.cur.execute(f"DROP TABLE {self.table_name}")
         self.conn.commit()
 
-    def close_position(self, date, ticker, current_price, current_value, result, result_percent):
-        # when closing a position set active to 0 and add the current price and value
-        self.cur.execute("UPDATE transactions SET Active = 0, Close_price = ?, Close_value = ?, Result = ?, Result_percent = ? WHERE Date = ? AND Ticket = ?", (current_price, current_value, result, result_percent, date, ticker))        
-        self.conn.commit()
-
-
-# create a database to store the scripts
+    def get_from_conversation_id(self, conversation_id):
+        self.cur.execute(f"SELECT * FROM {self.table_name} WHERE conversation_id = ?", (conversation_id,))
+        return self.cur.fetchall()
+    
 
 class Database_Scripts:
     def __init__(self, table_name):
