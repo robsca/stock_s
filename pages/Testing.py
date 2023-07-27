@@ -10,7 +10,7 @@ st.set_page_config(layout="wide")
 
 from streamlit_ace import st_ace
 
-code = '''
+DEFAULT_CODE = '''
 import numpy as np
 import yfinance as yf
 import plotly.graph_objects as go
@@ -50,8 +50,12 @@ def function():
 
 
 '''
-code = st_ace(value=code, language='python', theme='monokai', keybinding='vscode', font_size=12, tab_size=4, show_gutter=True, show_print_margin=True, wrap=True, auto_update=True, readonly=False, key=None)
 
+conversations_box = st.empty()
+
+code = st_ace(value=DEFAULT_CODE, language='python', theme='monokai', keybinding='vscode', font_size=12, tab_size=4, show_gutter=True, show_print_margin=True, wrap=True, auto_update=True, readonly=False, key=None)
+
+openai.api_key = st.sidebar.text_input('OpenAI API Key', value='', max_chars=None, key=None, type='password', help=None)
 
 def chat_with_gpt(prompt):
     chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
@@ -66,27 +70,21 @@ from datab import Database_Questions
 db = Database_Questions('Chat')
 # get the conversations
 conversations = db.select()
+
 if len(conversations) > 0:
     # get unique conversations ids 
     conversations_ids = list(set([conversation[0] for conversation in conversations]))
     with st.sidebar.form(key='my_form_for_conversation'):
         conversation_id = st.selectbox('Select conversation', conversations_ids)
-        submit_button = st.form_submit_button(label='Submit', help=None, on_click=None, args=None, kwargs=None)
-        new_conversation = st.form_submit_button(label='New Chat', help=None, on_click=None, args=None, kwargs=None)
+        c1,c2 = st.columns(2)
+        submit_button = c1.form_submit_button(label='Submit', help=None, on_click=None, args=None, kwargs=None, use_container_width=True)
+        new_conversation = c2.form_submit_button(label='New Chat', help=None, on_click=None, args=None, kwargs=None, use_container_width=True)
+        delete_conversation = st.form_submit_button(label='Delete Chat', help=None, on_click=None, args=None, kwargs=None, use_container_width=True)
+    
     if submit_button:
         # get all the questions and answers from the conversation
-        questions_answers = db.get_from_conversation_id(conversation_id)
-        with st.expander('Conversation'):
-            # each row contains a question and an answer
-            if len(questions_answers) > 0:
-                for row in questions_answers:
-                    # use the chat module
-                    with st.chat_message('User'):
-                        st.write(row[1])
-                    with st.chat_message('GPT'):
-                        st.write(row[2])
-            else:
-                st.write('No questions and answers for this conversation')
+        conversations_id = conversation_id
+
         # new conversation button
     if new_conversation:
         conversation_id = datetime.datetime.now()
@@ -96,25 +94,35 @@ if len(conversations) > 0:
         st.experimental_rerun()
 
     # create a delete button
-    if st.sidebar.button(f'Delete conversation: {conversation_id}', use_container_width=True):
+    if delete_conversation:
         db.delete_single(conversation_id)
         # reload the page
         st.experimental_rerun()
 else:
     conversation_id = 'First conversation'
 
+with conversations_box.expander(f'Conversation {conversation_id}', expanded=True):
+    questions_answers = db.get_from_conversation_id(conversation_id)
 
-# create a new question form
-with st.sidebar.form(key='my_form'):
-    openai.api_key = st.sidebar.text_input('OpenAI API Key', value='', max_chars=None, key=None, type='password', help=None)
-    question = st.text_area('Question', value='', max_chars=None, key=None)
-    submit_button = st.form_submit_button(label='Submit', help=None, on_click=None, args=None, kwargs=None)
+    # each row contains a question and an answer
+    if len(questions_answers) > 0:
+        for row in questions_answers:
+            # use the chat module
+            with st.chat_message('User'):
+                st.write(row[1])
+            with st.chat_message('assistant'):
+                st.write(row[2])
+    else:
+        st.write('No questions and answers for this conversation')
 
-if submit_button:
+def on_click():
     # get the answer and save it
+    question = st.session_state.question
     answer = chat_with_gpt(question)
     # get conversation id
     db.insert(conversation_id, question, answer, datetime.datetime.now())
+
+question = st.chat_input(placeholder='Type a question...', on_submit=on_click, key = 'question')
 
 
 # Store the code as a string
