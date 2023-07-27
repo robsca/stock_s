@@ -154,7 +154,7 @@ class StocktonGym:
         if self.stop_simulation:
             st.stop()
         if self.submit_button:
-            self.hist = self._get_data(self.interval)
+            self.hist = self._get_data()
             # plot data 
             fig = go.Figure(data=[go.Candlestick(x=self.hist.index,
                         open=self.hist['Open'],
