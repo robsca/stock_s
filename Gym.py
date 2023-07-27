@@ -292,16 +292,11 @@ class StocktonGym:
 if __name__ == '__main__':
     gym = StocktonGym()
     
-    def custom_function_(hist):
+    def custom_function_(hist,i)
         '''
         Random function
         '''
-        if random.randint(0, 200) < 75:
-            action_string = 'buy'
-        elif random.randint(0, 200) < 150:
-            action_string = 'sell'
-        else:
-            action_string = 'hold'
+        random.choice(['buy','sell','hold'])
         return action_string
     
     gym.custom_function_ = custom_function_
