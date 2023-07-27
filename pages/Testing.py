@@ -15,7 +15,8 @@ from datab import Database_Transactions
 import streamlit as st
 from streamlit_ace import st_ace
 
-code = '''
+code = """
+# watch out with the """"
 import yfinance as yf
 import plotly.graph_objects as go
 import datetime
@@ -51,7 +52,7 @@ def function():
     st.plotly_chart(fig, use_container_width=True)
     return data
     
-'''
+"""
 code = st_ace(value=code, language='python', theme='monokai', keybinding='vscode', font_size=12, tab_size=4, show_gutter=True, show_print_margin=True, wrap=True, auto_update=True, readonly=False, key=None)
 
 # Store the code as a string
