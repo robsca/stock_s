@@ -8,7 +8,7 @@ class Database_Scripts:
     def __init__(self, table_name = '`stockton.projects`', table_name_for_json = 'stockton.projects'):
         self.table_name = table_name
         self.table_name_for_json = table_name_for_json
-        credentials = service_account.Credentials.from_service_account_file(st.secrets["gcp_service_account"])
+        credentials = service_account.Credentials.from_service_account_info(st.secrets["gcp_service_account"])
         self.client = bigquery.Client(credentials=credentials)
 
     # why this function isn't actually working when using the form?
@@ -74,7 +74,7 @@ class Database_Questions:
     def __init__(self, table_name = '`stockton.conversations`', table_name_for_json = 'stockton.conversations'):
         self.table_name = table_name
         self.table_name_for_json = table_name_for_json
-        credentials = service_account.Credentials.from_service_account_file(st.secrets["gcp_service_account"])
+        credentials = service_account.Credentials.from_service_account_info(st.secrets["gcp_service_account"])
         self.client = bigquery.Client(credentials=credentials)
 
     def insert(self, conversation_id, question, answer, date):
