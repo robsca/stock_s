@@ -7,7 +7,7 @@ st.set_page_config(layout="wide")
 from datab import Database_Scripts
 # get all the scripts from the database
 
-db = Database_Scripts('Projects')
+db = Database_Scripts()
 scripts = db.select()
 scripts = [script[0] for script in scripts]
 if len(scripts) == 0:
@@ -22,12 +22,13 @@ def get_code(path='scripts/script_default_agent.py'):
     # read as string
     with open(python_script_path, 'r') as f:
         value = f.read()
-        return value
+        st.write(value)
+        return str(value)
 
 def get_code_from_db(project_name):
     try:
         # now get the code from the database
-        db = Database_Scripts('Projects')
+        db = Database_Scripts()
         scripts = db.get_from_project(project_name)
         scripts = scripts[0]
         return scripts
@@ -44,13 +45,16 @@ submit_button = x2.form_submit_button(label='Create new Project', use_container_
 project_name_new = x1.text_input(label='Project Name', value='', autocomplete='on', key=None, help=None)
 unique_project_name = True if project_name_new not in scripts else False
 if submit_button and unique_project_name:
-    db.insert(project_name_new, get_code('scripts/script_default_model.py'), get_code('scripts/script_default_agent.py'), get_code('scripts/script_default_utils.py'))
+    default_agent = get_code('scripts/script_default_agent.py')
+    default_model = get_code('scripts/script_default_model.py')
+    default_utils = get_code('scripts/script_default_utils.py')
+
+    db.insert(project_name_new, default_model, default_agent, default_utils)
     st.experimental_rerun()
 
 #
 save = st.sidebar.button('Save', use_container_width=True)
 restore_base = c3.button('Restore Default', use_container_width=True)
-
 agent_code = db.get_agent_from_project(project_name)[0][0]
 model_code = db.get_model_from_project(project_name)[0][0]
 utils_code = db.get_utils_from_project(project_name)[0][0]
@@ -94,8 +98,3 @@ if st.button('Write'):
         f.write(model_code)
     with open('scripts/utils.py', 'w') as f:
         f.write(utils_code)
-db.close()
-
-
-
-# st.write(code_area)

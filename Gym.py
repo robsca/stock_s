@@ -12,7 +12,12 @@ import time
 import random
 import numpy as np
 from plotly.subplots import make_subplots
-
+    
+@st.cache_data
+def now_get_data(ticker, interval, start_date, end_date):
+    tick = yf.Ticker(ticker)
+    hist = tick.history(interval=interval, start=start_date, end=end_date)
+    return hist
 
 class Analyser:
     def __init__(self):
@@ -141,7 +146,7 @@ class StocktonGym:
             self.end_date = st.date_input('End Date', value=pd.to_datetime('2022-12-31'))
             # submit button
         
-        self.hist = self._get_data(self.interval)
+        self.hist = self._get_data()
         # buy and sell buttons
         self.position_history = pd.DataFrame(columns=['Date', 'Position_type', 'Open_price', 'Close_price', 'Profit', 'Difference_between_open_and_close'])
 
@@ -165,11 +170,14 @@ class StocktonGym:
         if self.start_simulation_button:
             self.start_simulation()
     
-    def _get_data(self, interval):
+    def _get_data(self):
         interval = self.interval
-        tick = yf.Ticker(self.ticker)
-        hist = tick.history(interval=interval, start=self.start_date, end=self.end_date)
+        ticker = self.ticker
+        start_date = self.start_date
+        end_date = self.end_date
+        hist = now_get_data(ticker, interval, start_date, end_date)
         return hist
+
 
     def operate_action(self, action_string, last_price, next_price_, position_history, hist):
         # Update position history and score 
@@ -296,7 +304,7 @@ if __name__ == '__main__':
         '''
         Random function
         '''
-        action_string =random.choice(['buy','sell','hold'])
+        action_string = random.choice(['buy','sell','hold'])
         return action_string
     
     gym.custom_function_ = custom_function_

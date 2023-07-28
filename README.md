@@ -26,4 +26,7 @@
     TO DO:
     - Create a hosted connection to train the models
     
+    # write a sql query to create a table 
+
+    impr
 

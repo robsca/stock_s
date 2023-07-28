@@ -67,7 +67,7 @@ def chat_with_gpt(prompt):
 # create a chat with gpt
 import datetime
 from datab import Database_Questions
-db = Database_Questions('Chat')
+db = Database_Questions()
 # get the conversations
 conversations = db.select()
 
@@ -83,21 +83,20 @@ if len(conversations) > 0:
     
     if submit_button:
         # get all the questions and answers from the conversation
-        conversations_id = conversation_id
+        conversations_id = str(conversation_id)
 
         # new conversation button
     if new_conversation:
-        conversation_id = datetime.datetime.now()
+        conversation_id = str(datetime.datetime.now())
         # reload the page
         # save a empty conversation
-        db.insert(conversation_id, '', '', datetime.datetime.now())
+        db.insert(conversation_id, '', '', str(datetime.datetime.now()))
         st.experimental_rerun()
 
     # create a delete button
     if delete_conversation:
-        db.delete_single(conversation_id)
-        # reload the page
-        st.experimental_rerun()
+        db.delete_single_conversation_form_id(conversation_id)
+        #st.experimental_rerun()
 else:
     conversation_id = 'First conversation'
 
@@ -107,11 +106,13 @@ with conversations_box.expander(f'Conversation {conversation_id}', expanded=True
     # each row contains a question and an answer
     if len(questions_answers) > 0:
         for row in questions_answers:
-            # use the chat module
-            with st.chat_message('User'):
-                st.write(row[1])
-            with st.chat_message('assistant'):
-                st.write(row[2])
+            # if the question is not empty
+            if row[1] != '':
+                # use the chat module
+                with st.chat_message('User'):
+                    st.write(row[1])
+                with st.chat_message('assistant'):
+                    st.write(row[2])
     else:
         st.write('No questions and answers for this conversation')
 
@@ -120,7 +121,7 @@ def on_click():
     question = st.session_state.question
     answer = chat_with_gpt(question)
     # get conversation id
-    db.insert(conversation_id, question, answer, datetime.datetime.now())
+    db.insert(conversation_id, question, answer, str(datetime.datetime.now()))
 
 question = st.chat_input(placeholder='Type a question...', on_submit=on_click, key = 'question')
 

@@ -20,7 +20,6 @@ class AGENT:
         If the short moving average is lower the long moving average, then it's a buy, otherwise is a sell.
         We are going to add ad intensity signal considering the standard deviation level to select when holding a position.
         '''
-        
     def moving_average_crossing_strategy(self,hist, i):
         short_window = 25
         long_window = 75
@@ -37,9 +36,8 @@ class AGENT:
         last_signal = signals.iloc[-1]['positions']
         return last_signal
 
-
 def function(hist,i):
     MAVerick = AGENT()
     signal = MAVerick.moving_average_crossing_strategy(hist,i)
     return signal
-    
+

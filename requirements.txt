@@ -7,3 +7,4 @@ yfinance
 torch
 streamlit-ace
 openai
+google-cloud-bigquery

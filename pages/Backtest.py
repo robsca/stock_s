@@ -16,16 +16,12 @@ if __name__ == '__main__':
 
     agent = AGENT()
     if agent:
-        try:
-            st.sidebar.success('AGENT: {} - Loaded'.format(agent.model_name))
-            st.sidebar.info(agent.description)
-        except:
-            pass
-            
+        st.sidebar.success('AGENT: {} - Loaded'.format(agent.model_name))
+        st.sidebar.info(agent.description)
     if st.sidebar.button(f'Restart Weights and Memory: {agent.model_name}', use_container_width=True):
         agent.restart_model()
   
-    db = Database_Scripts('Projects')
+    db = Database_Scripts()
     scripts = db.select()
     scripts = [script[0] for script in scripts]
     with st.form(key='my_form_for_project'):
